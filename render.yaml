@@ -7,7 +7,8 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: npm ci && npm run build
+    # NODE_ENV=production fait omettre les devDependencies ; @nestjs/cli est nécessaire pour `nest build`
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /
     envVars:

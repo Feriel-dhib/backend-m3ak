@@ -1,0 +1,30 @@
+# Blueprint Render — https://render.com/docs/infrastructure-as-code
+# Déployer : Dashboard Render → New → Blueprint → connecter le dépôt → renseigner les secrets ci-dessous.
+
+services:
+  - type: web
+    name: backend-m3ak
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Secrets et config à définir dans le dashboard (Blueprint sync: false)
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # URLs front autorisées CORS (séparées par des virgules), ex. https://app.example.com
+      - key: CORS_ORIGINS
+        sync: false
+      # Optionnel selon vos fonctionnalités (voir README section Configuration)
+      - key: FCM_SERVER_KEY
+        sync: false

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { SosAlert, SosAlertDocument } from './schemas/sos-alert.schema';
@@ -150,6 +150,33 @@ export class SosAlertService {
   async updateStatut(alertId: string, statut: string) {
     return this.sosAlertModel
       .findByIdAndUpdate(alertId, { $set: { statut } }, { new: true })
+      .exec();
+  }
+
+  async respondToAlert(alertId: string, responderUserId: string) {
+    const alert = await this.sosAlertModel.findById(alertId).exec();
+    if (!alert) throw new NotFoundException('Alerte introuvable');
+    if (alert.userId.toString() === responderUserId) {
+      throw new BadRequestException('Vous ne pouvez pas répondre à votre propre alerte');
+    }
+    if (alert.statut !== 'ENVOYEE') {
+      throw new BadRequestException(
+        "Cette alerte a déjà été prise en charge ou n'est plus disponible",
+      );
+    }
+    return this.sosAlertModel
+      .findByIdAndUpdate(
+        alertId,
+        {
+          $set: {
+            statut: 'EN_ROUTE',
+            responderUserId: new Types.ObjectId(responderUserId),
+          },
+        },
+        { new: true },
+      )
+      .populate('userId', '-password')
+      .populate('responderUserId', '-password')
       .exec();
   }
 }

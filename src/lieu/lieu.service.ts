@@ -1,12 +1,59 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Lieu, LieuDocument } from './schemas/lieu.schema';
 import { CreateLieuDto } from './dto/create-lieu.dto';
+import type { PlaceAccessibilityAnalyzeRequestDto } from './dto/place-accessibility-analyze-request.dto';
 
 @Injectable()
 export class LieuService {
-  constructor(@InjectModel(Lieu.name) private lieuModel: Model<LieuDocument>) {}
+  constructor(
+    @InjectModel(Lieu.name) private lieuModel: Model<LieuDocument>,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async analyzeAccessibility(
+    dto: PlaceAccessibilityAnalyzeRequestDto,
+  ): Promise<Record<string, unknown>> {
+    const base =
+      this.configService.get<string>('AI_COMMUNITY_BASE_URL') ??
+      'http://127.0.0.1:8000';
+    const url = `${base.replace(/\/$/, '')}/ai/accessibility/analyze`;
+    const timeoutMs = Number(
+      this.configService.get<string>('AI_ACCESSIBILITY_TIMEOUT_MS') ??
+        '90000',
+    );
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dto),
+        signal: AbortSignal.timeout(
+          Number.isFinite(timeoutMs) ? timeoutMs : 90000,
+        ),
+      });
+    } catch (e) {
+      throw new ServiceUnavailableException(
+        `Accessibility AI unreachable (${url}): ${String(e)}`,
+      );
+    }
+
+    if (!response.ok) {
+      const txt = await response.text();
+      throw new ServiceUnavailableException(
+        `Accessibility AI HTTP ${response.status}: ${txt.slice(0, 400)}`,
+      );
+    }
+
+    return (await response.json()) as Record<string, unknown>;
+  }
 
   async upsertFromCommunitySignal(input: {
     nom: string;

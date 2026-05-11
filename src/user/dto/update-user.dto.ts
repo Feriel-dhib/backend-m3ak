@@ -83,4 +83,9 @@ export class UpdateUserDto {
   @MinLength(1)
   @MaxLength(512)
   photoProfil?: string;
+
+  @ApiPropertyOptional({ description: 'Badge partenaire (compte institutionnel labellisé)' })
+  @IsOptional()
+  @IsBoolean()
+  partenaire?: boolean;
 }

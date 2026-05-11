@@ -95,6 +95,14 @@ export class User {
   @Prop({ type: String, default: 'ACTIF' })
   statut: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Compte partenaire (association, commerce labellisé) — badge « Partenaire »',
+    default: false,
+  })
+  @Prop({ type: Boolean, default: false })
+  partenaire: boolean;
+
   @ApiPropertyOptional({ description: 'Dernière latitude connue (position live)' })
   @Prop({ type: Number, default: null })
   latitude: number | null;

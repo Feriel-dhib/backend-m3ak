@@ -22,6 +22,10 @@ export class SosAlert {
   @Prop({ type: String, default: 'ENVOYEE' })
   statut: string;
 
+  @ApiPropertyOptional({ description: 'ID du répondant (secours en route)' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
+  responderUserId?: Types.ObjectId;
+
   @ApiPropertyOptional({ description: 'Score stress vocal 0–100' })
   @Prop({ type: Number, required: false })
   voiceScore?: number;

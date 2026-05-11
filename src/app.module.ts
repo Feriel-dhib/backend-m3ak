@@ -23,6 +23,7 @@ import { LieuModule } from './lieu/lieu.module';
 import { LieuReservationModule } from './lieu-reservation/lieu-reservation.module';
 import { M3akLearningModule } from './m3ak-learning/m3ak-learning.module';
 import { M3akGuidanceModule } from './m3ak-guidance/m3ak-guidance.module';
+import { EducationModule } from './education/education.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { M3akGuidanceModule } from './m3ak-guidance/m3ak-guidance.module';
     HelpPriorityModule,
     M3akLearningModule,
     M3akGuidanceModule,
+    EducationModule,
     MapModule,
     RelationModule,
   ],

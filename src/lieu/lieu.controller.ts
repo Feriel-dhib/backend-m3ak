@@ -18,6 +18,7 @@ import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import { LieuService } from './lieu.service';
 import { CreateLieuDto } from './dto/create-lieu.dto';
+import { PlaceAccessibilityAnalyzeRequestDto } from './dto/place-accessibility-analyze-request.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { getUploadsRoot } from '../common/upload-paths';
 
@@ -74,6 +75,15 @@ export class LieuController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     });
+  }
+
+  @Post('ai/analyze-accessibility')
+  @ApiOperation({
+    summary:
+      'IA accessibilité : scores par handicap + résumé (proxy FastAPI Groq + OSM)',
+  })
+  async analyzeAccessibility(@Body() body: PlaceAccessibilityAnalyzeRequestDto) {
+    return this.lieuService.analyzeAccessibility(body);
   }
 
   @Get('nearby')

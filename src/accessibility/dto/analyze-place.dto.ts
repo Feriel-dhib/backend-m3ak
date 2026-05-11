@@ -2,10 +2,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsLatitude,
   IsLongitude,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 
 export class AnalyzePlaceDto {
@@ -51,4 +53,15 @@ export class AnalyzePlaceDto {
   @IsArray()
   @IsString({ each: true })
   user_comments?: string[];
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  has_community_data?: boolean;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  community_posts_count?: number;
 }

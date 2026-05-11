@@ -299,6 +299,7 @@ Résumé:`;
 
   getAccessibilityHealth() {
     return {
+      ok: true,
       status: 'ok',
       service: 'M3ak Accessibility',
       featureFlags: this.getFeatureFlags(),
@@ -349,14 +350,17 @@ Résumé:`;
   }
 
   nearestNode(lat: number, lon: number): { node_id: number } {
-    const nodeId = this.stableNodeId(lat, lon);
+    const nodeId = this.encodeNodeId(lat, lon);
     this.nodeRegistry.set(nodeId, { lat, lon });
     return { node_id: nodeId };
   }
 
   async accessibleRouteFull(startNode: number, endNode: number) {
-    const start = this.nodeRegistry.get(startNode);
-    const end = this.nodeRegistry.get(endNode);
+    const start =
+      this.nodeRegistry.get(startNode) ?? this.decodeNodeId(startNode);
+    const end =
+      this.nodeRegistry.get(endNode) ?? this.decodeNodeId(endNode);
+
     if (!start || !end) {
       return {
         error:
@@ -372,14 +376,29 @@ Résumé:`;
     return {
       best_path: [startNode, endNode],
       coordinates: finalPath.map((p) => ({ lat: p.lat, lon: p.lon })),
-      average_accessibility_score: aiScore,
+      accessibility_score: aiScore,
     };
   }
 
-  private stableNodeId(lat: number, lon: number): number {
-    const latQ = Math.round((lat + 90.0) * 100000);
-    const lonQ = Math.round((lon + 180.0) * 100000);
-    return (latQ * 1000003 + lonQ * 9973) & 0x7fffffff;
+  /**
+   * Encodage réversible lat/lon → nodeId (survit aux redémarrages Render).
+   * latQ ∈ [0, 18_000_000], lonQ ∈ [0, 36_000_000] → nodeId < Number.MAX_SAFE_INTEGER
+   */
+  private encodeNodeId(lat: number, lon: number): number {
+    const latQ = Math.round((lat + 90) * 100000);
+    const lonQ = Math.round((lon + 180) * 100000);
+    return latQ * 36000001 + lonQ;
+  }
+
+  private decodeNodeId(
+    nodeId: number,
+  ): { lat: number; lon: number } | null {
+    if (nodeId < 0 || !Number.isSafeInteger(nodeId)) return null;
+    const lonQ = nodeId % 36000001;
+    const latQ = (nodeId - lonQ) / 36000001;
+    if (latQ < 0 || latQ > 18000000 || lonQ < 0 || lonQ > 36000000)
+      return null;
+    return { lat: latQ / 100000 - 90, lon: lonQ / 100000 - 180 };
   }
 
   private haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {

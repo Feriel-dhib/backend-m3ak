@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsLatitude, IsLongitude, Max, Min } from 'class-validator';
+import { IsInt, IsLatitude, IsLongitude, Min } from 'class-validator';
 
 export class NearestNodeDto {
   @ApiProperty({ example: 36.8 })
@@ -12,15 +12,13 @@ export class NearestNodeDto {
 }
 
 export class AccessibleRouteDto {
-  @ApiProperty({ example: 123456789 })
+  @ApiProperty({ example: 4560018000001 })
   @IsInt()
-  @Min(1)
-  @Max(2147483647)
+  @Min(0)
   start_node: number;
 
-  @ApiProperty({ example: 123456790 })
+  @ApiProperty({ example: 4560018000002 })
   @IsInt()
-  @Min(1)
-  @Max(2147483647)
+  @Min(0)
   end_node: number;
 }
